@@ -28,6 +28,7 @@ target_link_directories(SaturnAntiCheatDriver PRIVATE
 
 target_link_options(SaturnAntiCheatDriver PRIVATE
     /DRIVER
+    /INTEGRITYCHECK
     /ENTRY:DriverEntry
     /SUBSYSTEM:NATIVE
     /NODEFAULTLIB
