@@ -1,4 +1,4 @@
-add_executable(SaturnAntiCheatLauncher WIN32 main.c)
+add_executable(SaturnAntiCheatLauncher WIN32 main.c launcher.rc)
 
 set_property(TARGET SaturnAntiCheatLauncher PROPERTY
     MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
