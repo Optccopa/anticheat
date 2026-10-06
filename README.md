@@ -2,20 +2,50 @@
 
 # Saturn Anti Cheat
 ## Install
-> [!WARNING]
-> The driver currently only gets signed in my workspace
-> Refer to src/driver/CmakeLists.txt:43 to fix it yourself
 ### Requirements
-- CMake 3.28 (`winget install -e --id Microsoft.WindowsSDK`)
-- Windows driver kit (`winget install Microsoft.WindowsWDK.10.0.28000`)
-- just (optional, `winget install -e --id Casey.Just`)
+- CMake 3.28 (`winget install -e --id Kitware.CMake`).
+- Visual Studio Build Tools with the "Desktop development with C++" workload (`winget install -e --id Microsoft.VisualStudio.BuildTools`).
+- Windows SDK 10.0.28000 (`winget install -e --id Microsoft.WindowsSDK.10.0.28000`).
+- Windows SDK 10.0.26100, for `signtool` (`winget install -e --id Microsoft.WindowsSDK.10.0.26100`).
+- Windows driver kit (`winget install Microsoft.WindowsWDK.10.0.28000`).
+- just (optional, `winget install -e --id Casey.Just`).
+
+### PC Setup
+> [!CAUTION]
+> Make sure to save your BitLocker recovery key for your Microsoft account before changing secure boot (`https://account.microsoft.com/devices/recoverykey`).
+>
+> If you do not have access to the key you may get prompted for it, If it's not provided you will not be able to access any of your encrypted files.
+>
+> You will not be able to play games that require test signing or secure boot (Fortnite, R6 Siege, Valorant, FaceIT,  etc) until you re-enable secure boot and disable testsigning (below), it is also not reccomended due to how the driver can look like a active cheat.
+
+> [!NOTE]
+> While secure boot is disabled you are more vulnerable to malware that can start before the OS.
+
+- Open an admin powershell window and run `bcdedit /set testsigning on`.
+- Restart your pc.
+
+### Reverse Setup
+- Enable `Secure Boot` in your bios.
+- Save and reboot.
+- Open an admin powershell window and run:
+```bash
+# Remove driver traces
+sc.exe stop SaturnAC
+sc.exe delete SaturnAC
+# Disable test mode
+bcdedit /set testsigning off
+```
+- Restart your pc.
+- Disable `Secure Boot` in your bios.
+- Save and reboot.
 
 ### Clone the source code
 ```bash
 git clone https://github.com/optccopa/anticheat
 cd anticheat
 ```
-
+> [!NOTE]
+> Signing cert is created on first build as `SaturnAC` in `CurrentUser\My`
 ### Build with `just`:
 ```bash
 just configure && just run
@@ -30,10 +60,10 @@ cmake --build build --config Release
 
 ## Current Features
 ### Kernel driver
-- Basically nothing besides loading and unloading
+- Basically nothing besides loading and unloading.
 ### Launcher
-- Starts the game with -insecure
-- Handles the driver; loading and unloading
-- Clean saturn colored native gui
+- Starts the game with -insecure.
+- Handles the driver; loading and unloading.
+- Clean saturn colored native gui.
 
-<img src="images/gui.png" style="max-width: 50%; height: auto;">
+<img src="images/gui.png">

@@ -1,12 +1,15 @@
 string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 
-set(WDK "C:/Program Files (x86)/Windows Kits/10")
+cmake_host_system_information(RESULT WDK QUERY WINDOWS_REGISTRY
+    "HKLM/SOFTWARE/Microsoft/Windows Kits/Installed Roots" VALUE KitsRoot10)
+file(TO_CMAKE_PATH "${WDK}" WDK)
+set(WDK_VERSION ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION})
 
 add_library(SaturnAntiCheatDriver SHARED main.c)
 
-target_include_directories(SaturnAntiCheatDriver SYSTEM BEFORE PRIVATE 
-    "${WDK}/Include/10.0.28000.0/km"
-    "${WDK}/Include/10.0.28000.0/shared"
+target_include_directories(SaturnAntiCheatDriver SYSTEM BEFORE PRIVATE
+    "${WDK}/Include/${WDK_VERSION}/km"
+    "${WDK}/Include/${WDK_VERSION}/shared"
 )
 
 target_compile_definitions(SaturnAntiCheatDriver PRIVATE 
@@ -20,7 +23,7 @@ target_compile_options(SaturnAntiCheatDriver PRIVATE
 )
 
 target_link_directories(SaturnAntiCheatDriver PRIVATE 
-    "${WDK}/Lib/10.0.28000.0/km/x64"
+    "${WDK}/Lib/${WDK_VERSION}/km/x64"
 )
 
 target_link_options(SaturnAntiCheatDriver PRIVATE
@@ -40,19 +43,31 @@ target_link_libraries(SaturnAntiCheatDriver
 
 set_target_properties(SaturnAntiCheatDriver PROPERTIES SUFFIX ".sys")
 
-# TODO:
-# - Make signing portable
-# - Fix windows sdk / wdk paths
+# Test-signs with a self-signed cert from CurrentUser\My, created on first configure
+set(SIGN_CERT_SUBJECT "SaturnAC" CACHE STRING "Subject (CN) of the code signing cert")
 
-set(CERT_THUMBPRINT "17A715430A5C1D7A00BEE0A74B3867B1D6EEB325")
+execute_process(
+    COMMAND powershell -NoProfile -Command
+        "$ErrorActionPreference = 'Stop'; $env:PSModulePath = [Environment]::GetEnvironmentVariable('PSModulePath', 'Machine'); if (-not (Get-ChildItem Cert:\\CurrentUser\\My |Where-Object { $_.Subject -eq 'CN=${SIGN_CERT_SUBJECT}' -and $_.NotAfter -gt (Get-Date) })) { New-SelfSignedCertificate -Type CodeSigningCert -Subject 'CN=${SIGN_CERT_SUBJECT}' -CertStoreLocation Cert:\\CurrentUser\\My | Out-Null; 'created' }"
+    OUTPUT_VARIABLE CERT_CREATED
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    COMMAND_ERROR_IS_FATAL ANY
+)
+if(CERT_CREATED)
+    message(STATUS "Created code signing cert CN=${SIGN_CERT_SUBJECT} in CurrentUser\\My")
+endif()
+
+# signtool isn't in every SDK version's bin, so search all of them, newest first
+file(GLOB SIGNTOOL_DIRS "${WDK}/bin/*/x64")
+list(SORT SIGNTOOL_DIRS COMPARE NATURAL ORDER DESCENDING)
 
 find_program(SIGNTOOL signtool.exe
-    HINTS "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64"
+    HINTS ${SIGNTOOL_DIRS}
     NO_DEFAULT_PATH
     REQUIRED
 )
 
 add_custom_command(TARGET SaturnAntiCheatDriver POST_BUILD
-    COMMAND ${SIGNTOOL} sign /fd sha256 /sha1 ${CERT_THUMBPRINT} "$<TARGET_FILE:SaturnAntiCheatDriver>"
+    COMMAND ${SIGNTOOL} sign /fd sha256 /a /s My /n ${SIGN_CERT_SUBJECT} "$<TARGET_FILE:SaturnAntiCheatDriver>"
     COMMENT "Signing driver..."
 )
