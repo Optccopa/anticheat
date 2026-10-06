@@ -16,11 +16,12 @@
 >
 > If you do not have access to the key you may get prompted for it, If it's not provided you will not be able to access any of your encrypted files.
 >
-> You will not be able to play games that require test signing or secure boot (Fortnite, R6 Siege, Valorant, FaceIT,  etc) until you re-enable secure boot and disable testsigning (below), it is also not reccomended due to how the driver can look like a active cheat.
+> You will not be able to play games that require test signing or secure boot (Fortnite, R6 Siege, Valorant, FaceIT, etc) until you re-enable secure boot and disable testsigning (below), it is also not reccomended due to how the driver can look like a active cheat.
 
 > [!NOTE]
 > While secure boot is disabled you are more vulnerable to malware that can start before the OS.
-
+- Enable `Secure Boot` in your bios.
+- Save and reboot.
 - Open an admin powershell window and run `bcdedit /set testsigning on`.
 - Restart your pc.
 
