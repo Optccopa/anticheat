@@ -1,0 +1,54 @@
+string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+
+set(WDK "C:/Program Files (x86)/Windows Kits/10")
+
+add_library(SaturnAntiCheatDriver SHARED main.c)
+
+target_include_directories(SaturnAntiCheatDriver SYSTEM BEFORE PRIVATE 
+    "${WDK}/Include/10.0.28000.0/km"
+    "${WDK}/Include/10.0.28000.0/shared"
+)
+
+target_compile_definitions(SaturnAntiCheatDriver PRIVATE 
+    _AMD64_ UNICODE _UNICODE POOL_NX_OPTIN=1
+)
+
+target_compile_options(SaturnAntiCheatDriver PRIVATE 
+    /W4 /WX
+    /GR- /EHs-c-
+    /kernel
+)
+
+target_link_directories(SaturnAntiCheatDriver PRIVATE 
+    "${WDK}/Lib/10.0.28000.0/km/x64"
+)
+
+target_link_options(SaturnAntiCheatDriver PRIVATE
+    /DRIVER
+    /ENTRY:DriverEntry
+    /SUBSYSTEM:NATIVE
+    /NODEFAULTLIB
+    /IGNORE:4099
+
+    /MANIFEST:NO
+    /INCREMENTAL:NO
+)
+
+target_link_libraries(SaturnAntiCheatDriver 
+    ntoskrnl hal BufferOverflowFastFailK
+)
+
+set_target_properties(SaturnAntiCheatDriver PROPERTIES SUFFIX ".sys")
+
+set(CERT_THUMBPRINT "17A715430A5C1D7A00BEE0A74B3867B1D6EEB325")
+
+find_program(SIGNTOOL signtool.exe
+    HINTS "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64"
+    NO_DEFAULT_PATH
+    REQUIRED
+)
+
+add_custom_command(TARGET SaturnAntiCheatDriver POST_BUILD
+    COMMAND ${SIGNTOOL} sign /fd sha256 /sha1 ${CERT_THUMBPRINT} "$<TARGET_FILE:SaturnAntiCheatDriver>"
+    COMMENT "Signing driver..."
+)

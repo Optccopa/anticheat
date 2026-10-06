@@ -1,3 +1,7 @@
+#ifndef UNICODE
+#define UNICODE
+#endif
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <windowsx.h>
@@ -43,8 +47,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
             }
 
             LOGBRUSH lb = { BS_SOLID, COL_ICON, 0 };
-            HPEN pen = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT,
-                                    3, &lb, 0, NULL);
+            HPEN pen = ExtCreatePen(PS_GEOMETRIC | PS_SOLID | PS_ENDCAP_FLAT, 3, &lb, 0, NULL);
             HPEN old = SelectObject(hdc, pen);
 
             // close
@@ -142,7 +145,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
     wc.hbrBackground = CreateSolidBrush(COL_BG);
 
-    RegisterClass(&wc);
+    RegisterClassW(&wc);
 
     int w = 400, h = 240;
     int x = (GetSystemMetrics(SM_CXSCREEN) - w) / 2;
