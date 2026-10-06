@@ -1,6 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <windowsx.h>
+#include <strsafe.h>
 
 #include "driver.h"
 
@@ -22,6 +23,16 @@ static BOOL g_closeHover = FALSE;
 static BOOL g_minHover = FALSE;
 
 static wchar_t status[128] = L"Starting launcher ...";
+
+static void updateStatus(HWND hwnd, const wchar_t *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    StringCchVPrintfW(status, ARRAYSIZE(status), fmt, args);
+    va_end(args);
+
+    InvalidateRect(hwnd, NULL, TRUE);
+    UpdateWindow(hwnd);
+}
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
     switch (msg) {
@@ -161,9 +172,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
         x, y, w, h,
         NULL, NULL, hInstance, NULL);
 
+    
     ShowWindow(hwnd, nCmdShow);
-
-    wcscpy(status, L"Loading SaturnAntiCheatDriver.sys ...");
+    UpdateWindow(hwnd);
+    
+    updateStatus(hwnd, L"Loading SaturnAntiCheatDriver.sys ...");
 
     wchar_t sysPath[MAX_PATH];
     GetModuleFileNameW(NULL, sysPath, MAX_PATH);
@@ -174,10 +187,19 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     }
 
     DWORD err = startDriver(sysPath);
-    if (err)
-        wsprintfW(status, L"Driver failed to load (error %lu)", err);
-    else
-        wcscpy(status, L"Anticheat running ...");
+    if (err) {
+        updateStatus(hwnd, L"Driver failed to load (error %lu)", err);
+    } else {
+        updateStatus(hwnd, L"Anticheat running ...");
+
+        INT_PTR r = (INT_PTR)ShellExecuteW(NULL, L"open",
+            L"C:\\Program Files (x86)\\Steam\\steam.exe",
+            L"-applaunch 730 -insecure", NULL, SW_SHOWNORMAL);
+        if (r <= 32) {
+            updateStatus(hwnd, L"Failed to launch game with -insecure, error: %i", (int)r);
+        }
+    }
+    InvalidateRect(hwnd, NULL, TRUE);
 
     MSG msg;
     while (GetMessageW(&msg, NULL, 0, 0)) {

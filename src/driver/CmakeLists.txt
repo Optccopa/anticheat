@@ -40,6 +40,10 @@ target_link_libraries(SaturnAntiCheatDriver
 
 set_target_properties(SaturnAntiCheatDriver PROPERTIES SUFFIX ".sys")
 
+# TODO:
+# - Make signing portable
+# - Fix windows sdk / wdk paths
+
 set(CERT_THUMBPRINT "17A715430A5C1D7A00BEE0A74B3867B1D6EEB325")
 
 find_program(SIGNTOOL signtool.exe
