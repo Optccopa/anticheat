@@ -9,20 +9,25 @@
 - CMake 3.28 (`winget install -e --id Microsoft.WindowsSDK`)
 - Windows driver kit (`winget install Microsoft.WindowsWDK.10.0.28000`)
 - just (optional, `winget install -e --id Casey.Just`)
+
+### Clone the source code
 ```bash
 git clone https://github.com/optccopa/anticheat
 cd anticheat
 ```
-### With `just`:
+
+### Build with `just`:
 ```bash
 just configure && just run
 ```
-### Raw cmake
+
+### Build with `CMake`:
 ```bash
 cmake -B build -A x64
 cmake --build build --config Release
 & "./build/bin/Release/SaturnAntiCheatLauncher.exe"
 ```
+
 ## Current Features
 ### Kernel driver
 - Basically nothing besides loading and unloading
