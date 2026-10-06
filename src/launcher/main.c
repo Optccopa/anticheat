@@ -1,10 +1,8 @@
-#ifndef UNICODE
-#define UNICODE
-#endif
-
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <windowsx.h>
+
+#include "driver.h"
 
 #define COL_BG RGB(216, 174, 109)
 #define COL_ICON RGB(101, 95, 69)
@@ -22,6 +20,8 @@ static BOOL g_tracking = FALSE;
 
 static BOOL g_closeHover = FALSE;
 static BOOL g_minHover = FALSE;
+
+static wchar_t status[128] = L"Starting launcher ...";
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
     switch (msg) {
@@ -59,6 +59,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
             // minimize
             int mx = rc.right - 69;
             MoveToEx(hdc, mx - 5, cy, NULL); LineTo(hdc, mx + 5, cy);
+
+            // loading status
+            SetBkMode(hdc, TRANSPARENT);
+            DrawTextW(hdc, status, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
             SelectObject(hdc, old);
             DeleteObject(pen);
@@ -141,7 +145,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     wc.lpfnWndProc = WndProc;
     wc.hInstance = hInstance;
     wc.lpszClassName = CLASS_NAME;
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.hCursor = LoadCursorW(NULL, MAKEINTRESOURCEW(32512));
 
     wc.hbrBackground = CreateSolidBrush(COL_BG);
 
@@ -159,10 +163,29 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
     ShowWindow(hwnd, nCmdShow);
 
+    wcscpy(status, L"Loading SaturnAntiCheatDriver.sys ...");
+
+    wchar_t sysPath[MAX_PATH];
+    GetModuleFileNameW(NULL, sysPath, MAX_PATH);
+
+    wchar_t *slash = wcsrchr(sysPath, L'\\');
+    if (slash) {
+        wcscpy(slash + 1, L"SaturnAntiCheatDriver.sys");
+    }
+
+    DWORD err = startDriver(sysPath);
+    if (err)
+        wsprintfW(status, L"Driver failed to load (error %lu)", err);
+    else
+        wcscpy(status, L"Anticheat running ...");
+
     MSG msg;
     while (GetMessageW(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
     }
+
+    stopDriver();
+
     return 0;
 }

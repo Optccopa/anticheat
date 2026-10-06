@@ -2,7 +2,7 @@
 
 VOID DriverUnload(IN PDRIVER_OBJECT DriverObject) {
     UNREFERENCED_PARAMETER(DriverObject);
-    KdPrint(("Driver Unloaded\n"));
+    DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "saturn: Unloaded\n");
 }
 
 NTSTATUS DriverEntry(
@@ -11,7 +11,7 @@ NTSTATUS DriverEntry(
 ) {
     UNREFERENCED_PARAMETER(RegistryPath);
 
-    DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "Saturn: loaded\n");
+    DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "saturn: Loaded\n");
     
     DriverObject->DriverUnload = DriverUnload;
     return STATUS_SUCCESS;
