@@ -5,17 +5,32 @@
 
 DWORD startDriver(const wchar_t *sysPath) {
     SC_HANDLE scm = OpenSCManagerW(NULL, NULL, SC_MANAGER_ALL_ACCESS);
-    if (!scm) return GetLastError();
+    if (!scm) {
+        return GetLastError();
+    }
+
     SC_HANDLE svc = OpenServiceW(scm, L"SaturnAC", SERVICE_ALL_ACCESS);
-    if (!svc)
+    if (!svc) {
         svc = CreateServiceW(scm, L"SaturnAC", L"SaturnAC",
             SERVICE_ALL_ACCESS, SERVICE_KERNEL_DRIVER,
             SERVICE_DEMAND_START, SERVICE_ERROR_NORMAL,
-            sysPath, NULL, NULL, NULL, NULL, NULL);
+            sysPath, NULL, NULL, NULL, NULL, NULL
+        );
+    }
+
     DWORD err = 0;
-    if (!svc || !StartServiceW(svc, 0, NULL)) err = GetLastError();
-    if (err == ERROR_SERVICE_ALREADY_RUNNING) err = 0;
-    if (svc) CloseServiceHandle(svc);
+    if (!svc || !StartServiceW(svc, 0, NULL)) {
+        err = GetLastError();
+    }
+
+    if (err == ERROR_SERVICE_ALREADY_RUNNING) {
+        err = 0;
+    }
+
+    if (svc) {
+        CloseServiceHandle(svc);
+    }
+
     CloseServiceHandle(scm);
     return err;
 }

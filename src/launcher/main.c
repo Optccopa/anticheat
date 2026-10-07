@@ -22,7 +22,7 @@ static BOOL g_tracking = FALSE;
 static BOOL g_closeHover = FALSE;
 static BOOL g_minHover = FALSE;
 
-static wchar_t status[128] = L"Starting launcher ...";
+static wchar_t status[256] = L"Starting launcher ...";
 
 static void updateStatus(HWND hwnd, const wchar_t *fmt, ...) {
     va_list args;
@@ -73,7 +73,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
 
             // loading status
             SetBkMode(hdc, TRANSPARENT);
-            DrawTextW(hdc, status, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+            RECT tr = rc;
+            DrawTextW(hdc, status, -1, &tr, DT_CENTER | DT_CALCRECT); // doesn't draw
+            int h = tr.bottom - tr.top;
+
+            RECT out = rc;
+            out.top = (rc.bottom - h) / 2;
+            out.bottom = out.top + h;
+            DrawTextW(hdc, status, -1, &out, DT_CENTER);
 
             SelectObject(hdc, old);
             DeleteObject(pen);
@@ -188,7 +196,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
     DWORD err = startDriver(sysPath);
     if (err) {
-        updateStatus(hwnd, L"Driver failed to load (error %lu)", err);
+        if (err == ERROR_INVALID_IMAGE_HASH) {
+            updateStatus(hwnd, L"Test signing is not enabled\nPlease refer to README.md > Install > PC Setup");
+        } else {
+            updateStatus(hwnd, L"Driver failed to load (error %lu)", err);
+        }
+        
     } else {
         updateStatus(hwnd, L"Anticheat running ...");
 

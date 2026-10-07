@@ -34,6 +34,7 @@
 sc.exe stop SaturnAC
 sc.exe delete SaturnAC
 # Disable test mode
+# Turning on secure boot can also disable test mode, if this errors, skip it
 bcdedit /set testsigning off
 ```
 - Restart your pc.
