@@ -1,6 +1,17 @@
 <img src="images/banner.png">
 
 # Saturn Anti Cheat
+## Features
+### Kernel driver
+- Flags threads not from inside images
+- More to come
+### Launcher
+- Starts the game with -insecure.
+- Handles the driver; loading and unloading.
+- Clean saturn colored native gui.
+
+<img src="images/gui.png">
+
 ## Install
 ### Requirements
 - CMake 3.28 (`winget install -e --id Kitware.CMake`).
@@ -34,7 +45,7 @@
 sc.exe stop SaturnAC
 sc.exe delete SaturnAC
 # Disable test mode
-# Turning on secure boot can also disable test mode, if this errors, skip it
+# Turning on secure boot may also disable test mode
 bcdedit /set testsigning off
 ```
 - Restart your pc.
@@ -59,13 +70,8 @@ cmake -B build -A x64
 cmake --build build --config Release
 & "./build/bin/Release/SaturnAntiCheatLauncher.exe"
 ```
-
-## Current Features
-### Kernel driver
-- Basically nothing besides loading and unloading.
-### Launcher
-- Starts the game with -insecure.
-- Handles the driver; loading and unloading.
-- Clean saturn colored native gui.
-
-<img src="images/gui.png">
+## View Debug Console
+- Install Dbgview
+- Open Dbgview.exe
+- Capture > Capture kernel
+- Filter / Highlight (under Help) > Include: `saturn:*`

@@ -9,14 +9,21 @@ VOID DriverUnload(IN PDRIVER_OBJECT DriverObject) {
     threadStatus = PsRemoveCreateThreadNotifyRoutine(createThreadRoutine);
     if (!NT_SUCCESS(threadStatus)) {
         DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL,
-            "saturn: failed to unset CreateThreadNotifyRoutine, err: %lu\n", threadStatus);
+            "saturn: failed to unset ThreadNotifyRoutine, err: %lu\n", threadStatus);
     }
 
     NTSTATUS processStatus;
     processStatus = PsSetCreateProcessNotifyRoutineEx(createProcessRoutine, TRUE);
     if (!NT_SUCCESS(processStatus)) {
         DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL,
-            "saturn: failed to unset CreateProcessNotifyRoutineEx, err: %lu\n", processStatus);
+            "saturn: failed to unset ProcessNotifyRoutineEx, err: %lu\n", processStatus);
+    }
+
+    NTSTATUS imageStatus;
+    imageStatus = PsRemoveLoadImageNotifyRoutine(loadImageRoutine);
+    if (!NT_SUCCESS(imageStatus)) {
+        DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL,
+            "saturn: failed to unset ImageNotifyRoutineEx, err: %ld\n", processStatus);
     }
 
     DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "saturn: unloaded\n");
@@ -34,14 +41,21 @@ NTSTATUS DriverEntry(
     threadStatus = PsSetCreateThreadNotifyRoutine(createThreadRoutine);
     if (!NT_SUCCESS(threadStatus)) {
         DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL,
-            "saturn: failed to set CreateThreadNotifyRoutine, err: %ld\n", threadStatus);
+            "saturn: failed to set ThreadNotifyRoutine, err: %ld\n", threadStatus);
     }
 
     NTSTATUS processStatus;
     processStatus = PsSetCreateProcessNotifyRoutineEx(createProcessRoutine, FALSE);
     if (!NT_SUCCESS(threadStatus)) {
         DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL,
-            "saturn: failed to set CreateProcessNotifyRoutineEx, err: %ld\n", processStatus);
+            "saturn: failed to set ProcessNotifyRoutineEx, err: %ld\n", processStatus);
+    }
+
+    NTSTATUS imageStatus;
+    imageStatus = PsSetLoadImageNotifyRoutineEx(loadImageRoutine, 0);
+    if (!NT_SUCCESS(imageStatus)) {
+        DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL,
+            "saturn: failed to set LoadImageNotifyRoutineEx, err: %ld\n", processStatus);
     }
     
     DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "saturn: loaded\n");
